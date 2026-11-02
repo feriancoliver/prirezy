@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prírezy na paletu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: dielenská karta — vľavo vstupy (prírez, balenie, doska, zákazka), vpravo výsledok s nákresmi; na mobile pod sebou */
+:root{
+  --bg:#eef0f2; --panel:#ffffff; --fg:#1d2329; --muted:#5d6873; --line:#d3d8dd;
+  --accent:#e0a400; --accent-ink:#1d2329; --wood:#d9b98a; --wood-line:#a67c45; --waste:#e6e9ec;
+  --card:#8c6d4a; --ok:#2f7d4f; --warn:#b5541c;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#15191d; --panel:#1e2328; --fg:#e7eaed; --muted:#98a3ad; --line:#333b43;
+  --accent:#f2bb1a; --accent-ink:#15191d; --wood:#8a6a3f; --wood-line:#c79a5c; --waste:#2a3036;
+  --card:#c9a77c; --ok:#5fbf86; --warn:#e8884f; color-scheme:dark}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;margin-bottom:20px}
+h1{font-family:var(--f-display);font-weight:700;font-size:2.1rem;letter-spacing:.01em;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--muted)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.inputs{display:flex;flex-direction:column;gap:14px}
+fieldset{border:1px solid var(--line);background:var(--panel);border-radius:6px;margin:0;padding:14px 16px 16px;min-width:0}
+legend{font-family:var(--f-display);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:.95rem;padding:0 6px;margin-left:-6px}
+legend .opt{font-family:var(--f-body);text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted);font-size:.85rem;margin-left:6px}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:12px}
+label{display:flex;flex-direction:column;gap:2px;font-size:.84rem;color:var(--fg);min-width:0}
+.code{font-family:var(--f-num);font-size:.66rem;color:var(--muted);letter-spacing:.02em;overflow-wrap:anywhere}
+.inp{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:4px;background:var(--bg);overflow:hidden;margin-top:2px}
+.inp:focus-within{outline:2px solid var(--accent);outline-offset:0}
+input,select{font-family:var(--f-num);font-size:.95rem;color:var(--fg);background:transparent;border:0;padding:7px 8px;width:100%;min-width:0;outline:none}
+input::placeholder{color:var(--muted);opacity:.7}
+select{font-family:var(--f-body);border:1px solid var(--line);border-radius:4px;background:var(--bg);margin-top:2px}
+select:focus{outline:2px solid var(--accent)}
+.u{font-family:var(--f-num);font-size:.75rem;color:var(--muted);padding:0 8px;display:flex;align-items:center;border-left:1px solid var(--line)}
+.hint{font-size:.78rem;color:var(--muted);margin:10px 0 0}
+.const{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin-top:12px;padding:8px 10px;border:1px dashed var(--line);border-radius:4px;font-size:.84rem}
+.const b{font-family:var(--f-num);font-weight:600}
+.result{position:sticky;top:12px;display:flex;flex-direction:column;gap:14px}
+@media (max-width:860px){.result{position:static}}
+.hero{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px 18px 16px;border-top:5px solid var(--accent);display:flex;flex-wrap:wrap;gap:12px 32px}
+.lbl{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.08em;font-weight:700;font-size:.9rem;color:var(--muted)}
+.big{font-family:var(--f-num);font-weight:600;font-size:3.2rem;line-height:1.05;font-variant-numeric:tabular-nums}
+.mid{font-family:var(--f-num);font-weight:600;font-size:2.2rem;line-height:1.15;font-variant-numeric:tabular-nums;padding-top:.5rem}
+.big small,.mid small{font-family:var(--f-body);font-size:1rem;font-weight:500;color:var(--muted);margin-left:6px}
+.sub{font-size:.85rem;color:var(--muted)}
+.chip{display:inline-block;margin-top:8px;font-size:.8rem;font-weight:600;padding:3px 9px;border-radius:99px;border:1px solid currentColor}
+.chip.h{color:var(--warn)} .chip.g{color:var(--ok)}
+.err{color:var(--warn);font-weight:600;margin-top:8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 16px}
+.card h2{font-family:var(--f-display);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:.95rem;margin:2px 0 8px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+td{padding:6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tr.key td{font-weight:600}
+td.v{text-align:right;font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:12px}
+td .f{display:block;font-family:var(--f-num);font-size:.7rem;color:var(--muted);font-weight:400}
+.sketches{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.sk{min-width:0}
+.sk p{margin:0 0 6px;font-size:.8rem;color:var(--muted)}
+svg{display:block;width:100%;height:auto;max-height:240px}
+.note{font-size:.8rem;color:var(--muted);margin:0}
+@media (prefers-reduced-motion:no-preference){.big,.mid{transition:color .2s}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Prírezy na paletu</h1>
+  <p>Rozmery v milimetroch, hmotnosti v kilogramoch. Výsledok sa prepočíta hneď.</p>
+</header>
+
+<div class="grid">
+<form class="inputs" id="f" autocomplete="off">
+  <fieldset>
+    <legend>Prírez</legend>
+    <div class="fields">
+      <label for="LENGTH">Dĺžka<span class="code">LENGTH</span><span class="inp"><input id="LENGTH" type="number" step="any" min="0" value="400"><span class="u">mm</span></span></label>
+      <label for="WIDTH">Šírka<span class="code">WIDTH</span><span class="inp"><input id="WIDTH" type="number" step="any" min="0" value="300"><span class="u">mm</span></span></label>
+      <label for="THICKNESS">Hrúbka<span class="code">THICKNESS</span><span class="inp"><input id="THICKNESS" type="number" step="any" min="0" value="18"><span class="u">mm</span></span></label>
+      <label for="mat">Materiál<span class="code">&nbsp;</span><select id="mat">
+        <option value="650" selected>DTD (650)</option>
+        <option value="750">MDF (750)</option>
+        <option value="600">Preglejka (600)</option>
+        <option value="620">OSB (620)</option>
+        <option value="7850">Oceľový plech (7850)</option>
+        <option value="2700">Hliník (2700)</option>
+        <option value="">Iná hustota</option>
+      </select></label>
+      <label for="DENSITY">Hustota<span class="code">DENSITY</span><span class="inp"><input id="DENSITY" type="number" step="any" min="0" value="650"><span class="u">kg/m³</span></span></label>
+      <label for="CUT_WEIGHT_IN">Hmotnosť 1 ks, ak ju poznáte<span class="code">CUT_WEIGHT</span><span class="inp"><input id="CUT_WEIGHT_IN" type="number" step="any" min="0" placeholder="z hustoty"><span class="u">kg</span></span></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Balenie</legend>
+    <div class="fields">
+      <label for="PACK_USEABLE_LENGTH">Využiteľná dĺžka<span class="code">PACK_USEABLE_LENGTH</span><span class="inp"><input id="PACK_USEABLE_LENGTH" type="number" step="any" min="0" value="870"><span class="u">mm</span></span></label>
+      <label for="PACK_USEABLE_WIDTH">Využiteľná šírka<span class="code">PACK_USEABLE_WIDTH</span><span class="inp"><input id="PACK_USEABLE_WIDTH" type="number" step="any" min="0" value="820"><span class="u">mm</span></span></label>
+      <label for="PACK_USEABLE_HEIGHT">Využiteľná výška<span class="code">PACK_USEABLE_HEIGHT</span><span class="inp"><input id="PACK_USEABLE_HEIGHT" type="number" step="any" min="0" value="200"><span class="u">mm</span></span></label>
+      <label for="NETTO_MAX">Max. netto<span class="code">NETTO_MAX</span><span class="inp"><input id="NETTO_MAX" type="number" step="any" min="0" value="500"><span class="u">kg</span></span></label>
+      <label for="TARE">Tára<span class="code">TARE</span><span class="inp"><input id="TARE" type="number" step="any" min="0" value="25"><span class="u">kg</span></span></label>
+    </div>
+    <div class="const"><span>Lepenka na spodku, medzi vrstvami a na vrchu</span><span class="code">CARDBOARD_THICKNESS</span><b>4 mm</b><span class="sub">nepočíta sa do hmotnosti</span></div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Doska<span class="opt">voliteľné</span></legend>
+    <div class="fields">
+      <label for="MAX_CUTS_FRM_PLATE">Max. počet prírezov z dosky<span class="code">MAX_CUTS_FRM_PLATE</span><span class="inp"><input id="MAX_CUTS_FRM_PLATE" type="number" step="1" min="0" placeholder="nevyplnené"><span class="u">ks</span></span></label>
+      <label for="INPUT_PLATE_LENGTH">Dĺžka vstupnej dosky<span class="code">INPUT_PLATE_LENGTH</span><span class="inp"><input id="INPUT_PLATE_LENGTH" type="number" step="any" min="0" placeholder="nevyplnené"><span class="u">mm</span></span></label>
+      <label for="INPUT_PLATE_WIDTH">Šírka vstupnej dosky<span class="code">INPUT_PLATE_WIDTH</span><span class="inp"><input id="INPUT_PLATE_WIDTH" type="number" step="any" min="0" placeholder="nevyplnené"><span class="u">mm</span></span></label>
+      <label for="PLATE_WEIGHT">Hmotnosť dosky<span class="code">PLATE_WEIGHT</span><span class="inp"><input id="PLATE_WEIGHT" type="number" step="any" min="0" placeholder="nevyplnené"><span class="u">kg</span></span></label>
+    </div>
+    <p class="hint">MAX_CUTS_FRM_PLATE určí počet dosiek na balenie. Rozmery a hmotnosť dosky slúžia na výpočet hmotnosti prírezu, ak nepoznáte hustotu.</p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Zákazka<span class="opt">voliteľné</span></legend>
+    <div class="fields">
+      <label for="ORDER_QTY">Celkový počet prírezov<span class="code">ORDER_QTY</span><span class="inp"><input id="ORDER_QTY" type="number" step="1" min="0" placeholder="napr. 1500"><span class="u">ks</span></span></label>
+    </div>
+  </fieldset>
+</form>
+
+<section class="result" aria-live="polite">
+  <div class="hero">
+    <div>
+      <div class="lbl">MAX_CUTS_PER_PACK</div>
+      <div class="big" id="Nmax">–<small>ks</small></div>
+      <div id="limit"></div>
+    </div>
+    <div id="palBox" hidden>
+      <div class="lbl">Potrebných balení</div>
+      <div class="mid" id="pal">–</div>
+      <div class="sub" id="palSub"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Nákres</h2>
+    <div class="sketches">
+      <div class="sk"><p id="capTop">Vrstva zhora</p><svg id="svgTop" role="img" aria-label="Rozloženie prírezov v jednej vrstve"></svg></div>
+      <div class="sk"><p id="capSide">Bok balenia</p><svg id="svgSide" role="img" aria-label="Vrstvy prírezov a lepenky z boku"></svg></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Výpočet</h2>
+    <div class="tw"><table><tbody id="tb"></tbody></table></div>
+  </div>
+  <p class="note">Všetky kusy vo vrstve sú otočené rovnako. Kombinované otáčanie môže občas dať viac kusov.</p>
+</section>
+</div>
+</div>
+
+<script>
+const CB=4; // CARDBOARD_THICKNESS, mm
+const $=id=>document.getElementById(id);
+const ids=["LENGTH","WIDTH","THICKNESS","DENSITY","CUT_WEIGHT_IN","PACK_USEABLE_LENGTH","PACK_USEABLE_WIDTH","PACK_USEABLE_HEIGHT","NETTO_MAX","TARE","MAX_CUTS_FRM_PLATE","INPUT_PLATE_LENGTH","INPUT_PLATE_WIDTH","PLATE_WEIGHT","ORDER_QTY"];
+const fl=Math.floor, ce=Math.ceil;
+const fmt=(x,d=0)=>Number.isFinite(x)?x.toLocaleString("sk-SK",{minimumFractionDigits:d,maximumFractionDigits:d}):"–";
+const KEY="prirezy-pack-v3";
+
+function syncMat(){ const m=[...$("mat").options].find(o=>o.value===$("DENSITY").value); $("mat").value=m?m.value:""; }
+$("mat").addEventListener("change",()=>{ if($("mat").value) $("DENSITY").value=$("mat").value; calc(); });
+$("DENSITY").addEventListener("input",syncMat);
+try{ const sv=JSON.parse(localStorage.getItem(KEY)||"null"); if(sv) ids.forEach(i=>{ if(sv[i]!==undefined) $(i).value=sv[i]; }); }catch(_){}
+syncMat();
+
+const num=id=>{ const x=parseFloat($(id).value); return Number.isFinite(x)?x:0; };
+
+function calc(){
+  const v={}; ids.forEach(i=>v[i]=num(i));
+  try{ localStorage.setItem(KEY,JSON.stringify(Object.fromEntries(ids.map(i=>[i,$(i).value])))); }catch(_){}
+  const L=v.LENGTH, W=v.WIDTH, T=v.THICKNESS;
+  const PL=v.PACK_USEABLE_LENGTH, PW=v.PACK_USEABLE_WIDTH, PH=v.PACK_USEABLE_HEIGHT;
+
+  // 1. hmotnosť prírezu
+  let cw, cwSrc;
+  if(v.CUT_WEIGHT_IN>0){ cw=v.CUT_WEIGHT_IN; cwSrc="zadaná ručne"; }
+  else if(v.PLATE_WEIGHT>0&&v.INPUT_PLATE_LENGTH>0&&v.INPUT_PLATE_WIDTH>0){
+    cw=v.PLATE_WEIGHT*(L*W)/(v.INPUT_PLATE_LENGTH*v.INPUT_PLATE_WIDTH); cwSrc="PLATE_WEIGHT × (L × W) / (INPUT_PLATE_LENGTH × INPUT_PLATE_WIDTH)"; }
+  else { cw=L*W*T*v.DENSITY/1e9; cwSrc=`${fmt(L)} × ${fmt(W)} × ${fmt(T,1)} × ${fmt(v.DENSITY)} / 10⁹`; }
+
+  // 2. kusov vo vrstve
+  const A={x:fl(PL/L),y:fl(PW/W)}, B={x:fl(PL/W),y:fl(PW/L)};
+  const ok=L>0&&W>0;
+  const nA=ok?A.x*A.y:0, nB=ok?B.x*B.y:0, rot=nB>nA, nLayer=Math.max(nA,nB), g=rot?B:A;
+
+  // 3. vrstvy s lepenkou
+  const nLayers=T>0?Math.max(0,fl((PH-CB)/(T+CB))):0;
+  const nCards=nLayers>0?nLayers+1:0;
+  const stack=nLayers*T+nCards*CB;
+
+  // 4.–6.
+  const nGeo=nLayer*nLayers;
+  const nWt=cw>0?fl(v.NETTO_MAX/cw):Infinity;
+  const N=Math.max(0,Math.min(nGeo,nWt));
+  const usedLayers=nLayer>0?ce(N/nLayer):0;
+  const netto=N*cw, brutto=netto+v.TARE;
+
+  // hero
+  $("Nmax").innerHTML=`${fmt(N)}<small>ks</small>`;
+  let lim;
+  if(!(L>0&&W>0&&T>0)) lim=`<div class="err">Zadajte dĺžku, šírku a hrúbku prírezu.</div>`;
+  else if(nLayer===0) lim=`<div class="err">Prírez sa do využiteľnej plochy balenia nezmestí.</div>`;
+  else if(nLayers===0) lim=`<div class="err">Využiteľná výška nestačí ani na jednu vrstvu s lepenkou (${fmt(T+2*CB)} mm).</div>`;
+  else if(!(cw>0)) lim=`<div class="err">Zadajte hustotu alebo hmotnosť prírezu.</div>`;
+  else lim = nGeo<=nWt ? `<span class="chip h">Rozhoduje výška</span>` : `<span class="chip g">Rozhoduje hmotnosť</span>`;
+  $("limit").innerHTML=lim;
+
+  const Q=v.ORDER_QTY, packs=(Q>0&&N>0)?ce(Q/N):NaN;
+  $("palBox").hidden=!(Q>0);
+  if(Q>0){
+    if(N>0){ const last=Q-(packs-1)*N;
+      $("pal").innerHTML=`${fmt(packs)}<small>ks</small>`;
+      $("palSub").textContent=packs===1?`${fmt(Q)} prírezov v jednom balení`:`${fmt(packs-1)} × ${fmt(N)} ks + posledné ${fmt(last)} ks`;
+    } else { $("pal").textContent="–"; $("palSub").textContent=""; }
+  }
+
+  // tabuľka
+  const rows=[
+    ["CUT_WEIGHT","Hmotnosť prírezu",cwSrc,fmt(cw,3)+" kg"],
+    ["N_LAYER","Kusov vo vrstve",`${g.x||0} × ${g.y||0}${rot?" (otočené o 90°)":""}`,fmt(nLayer)+" ks"],
+    ["N_LAYERS","Počet vrstiev",`⌊(${fmt(PH)} − 4) / (${fmt(T,1)} + 4)⌋`,fmt(nLayers)],
+    ["N_CARDBOARDS","Počet lepeniek","N_LAYERS + 1",fmt(nCards)+" ks"],
+    ["","Výška stohu",`${fmt(nLayers)} × ${fmt(T,1)} + ${fmt(nCards)} × 4 ≤ ${fmt(PH)}`,fmt(stack,1)+" mm"],
+    ["N_GEO","Limit podľa rozmerov","N_LAYER × N_LAYERS",fmt(nGeo)+" ks"],
+    ["N_WEIGHT","Limit podľa hmotnosti",`⌊${fmt(v.NETTO_MAX)} / ${fmt(cw,3)}⌋`,Number.isFinite(nWt)?fmt(nWt)+" ks":"–"],
+    ["MAX_CUTS_PER_PACK","Maximum na balenie","min(N_GEO ; N_WEIGHT)",fmt(N)+" ks",true],
+    ["NETTO","Netto","MAX_CUTS_PER_PACK × CUT_WEIGHT",fmt(netto,1)+" kg"],
+    ["BRUTTO","Brutto","NETTO + TARE",fmt(brutto,1)+" kg"],
+  ];
+  if(v.MAX_CUTS_FRM_PLATE>0){
+    const p=fl(v.MAX_CUTS_FRM_PLATE);
+    rows.push(["PLATES_PER_PACK","Dosiek na balenie",`⌈${fmt(N)} / ${fmt(p)}⌉`,fmt(ce(N/p))+" ks"]);
+    if(Q>0) rows.push(["","Dosiek na zákazku",`⌈${fmt(Q)} / ${fmt(p)}⌉`,fmt(ce(Q/p))+" ks"]);
+  }
+  if(Q>0&&N>0) rows.push(["","Potrebných balení",`⌈${fmt(Q)} / ${fmt(N)}⌉`,fmt(packs)+" ks"]);
+  $("tb").innerHTML=rows.map(r=>`<tr${r[4]?' class="key"':""}><td>${r[1]}${r[0]?` <span class="code">${r[0]}</span>`:""}<span class="f">${r[2]}</span></td><td class="v">${r[3]}</td></tr>`).join("");
+
+  // nákres zhora
+  if(PL>0&&PW>0&&nLayer>0){
+    const a=rot?W:L, b=rot?L:W, uW=g.x*a, uH=g.y*b, sw=PL/250;
+    let h=`<rect x="0" y="0" width="${PL}" height="${PW}" fill="var(--waste)" stroke="var(--muted)" stroke-width="${PL/150}"/>`;
+    const x0=(PL-uW)/2, y0=(PW-uH)/2;
+    for(let i=0;i<g.x;i++)for(let j=0;j<g.y;j++) h+=`<rect x="${x0+i*a}" y="${y0+j*b}" width="${a}" height="${b}" fill="var(--wood)" stroke="var(--wood-line)" stroke-width="${sw}"/>`;
+    $("svgTop").setAttribute("viewBox",`0 0 ${PL} ${PW}`); $("svgTop").innerHTML=h;
+    $("capTop").textContent=`Vrstva zhora · ${fmt(PL)} × ${fmt(PW)} mm`;
+  } else $("svgTop").innerHTML="";
+
+  // nákres z boku (výška zväčšená, aby boli vrstvy čitateľné)
+  if(PL>0&&PH>0&&nLayers>0){
+    const VW=300, VH=Math.min(220,Math.max(120,PH/PL*VW*2)), sy=VH/PH, sx=VW/PL;
+    const a=(rot?W:L), cols=g.x, uW=cols*a*sx, x0=(VW-uW)/2;
+    let h=`<rect x="0" y="0" width="${VW}" height="${VH}" fill="var(--waste)" stroke="var(--muted)" stroke-width="1.5"/>`;
+    let y=VH;
+    for(let k=0;k<=nLayers;k++){
+      const ch=Math.max(1.5,CB*sy); y-=ch;
+      h+=`<rect x="${x0}" y="${y}" width="${uW}" height="${ch}" fill="var(--card)"/>`;
+      if(k<nLayers){
+        const th=T*sy; y-=th;
+        const filled=k<usedLayers;
+        for(let c=0;c<cols;c++) h+=`<rect x="${x0+c*a*sx}" y="${y}" width="${a*sx}" height="${th}" fill="var(--wood)" fill-opacity="${filled?1:.35}" stroke="var(--wood-line)" stroke-width=".8"/>`;
+      }
+    }
+    $("svgSide").setAttribute("viewBox",`0 0 ${VW} ${VH}`); $("svgSide").innerHTML=h;
+    $("capSide").textContent=`Z boku · ${fmt(nLayers)} vrstiev, ${fmt(nCards)} lepeniek, výška ${fmt(stack,1)} z ${fmt(PH)} mm`;
+  } else { $("svgSide").innerHTML=""; $("capSide").textContent="Bok balenia"; }
+}
+$("f").addEventListener("input",calc);
+$("f").addEventListener("submit",e=>e.preventDefault());
+calc();
+</script>
+</body>
+</html>
