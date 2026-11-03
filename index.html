@@ -115,7 +115,7 @@ svg{display:block;width:100%;height:auto;max-height:240px}
       <label for="NETTO_MAX">Max. netto<span class="code">NETTO_MAX</span><span class="inp"><input id="NETTO_MAX" type="number" step="any" min="0" value="500"><span class="u">kg</span></span></label>
       <label for="TARE">Tára<span class="code">TARE</span><span class="inp"><input id="TARE" type="number" step="any" min="0" value="25"><span class="u">kg</span></span></label>
     </div>
-    <div class="const"><span>Lepenka na spodku, medzi vrstvami a na vrchu</span><span class="code">CARDBOARD_THICKNESS</span><b>4 mm</b><span class="sub">nepočíta sa do hmotnosti</span></div>
+    <div class="const"><span>Lepenka na spodku, medzi vrstvami a na vrchu</span><span class="code">CARDBOARD_THICKNESS</span><b>2 mm</b><span class="sub">nepočíta sa do hmotnosti</span></div>
   </fieldset>
 
   <fieldset>
@@ -169,7 +169,7 @@ svg{display:block;width:100%;height:auto;max-height:240px}
 </div>
 
 <script>
-const CB=4; // CARDBOARD_THICKNESS, mm
+const CB=2; // CARDBOARD_THICKNESS, mm
 const $=id=>document.getElementById(id);
 const ids=["LENGTH","WIDTH","THICKNESS","DENSITY","CUT_WEIGHT_IN","PACK_USEABLE_LENGTH","PACK_USEABLE_WIDTH","PACK_USEABLE_HEIGHT","NETTO_MAX","TARE","MAX_CUTS_FRM_PLATE","INPUT_PLATE_LENGTH","INPUT_PLATE_WIDTH","PLATE_WEIGHT","ORDER_QTY"];
 const fl=Math.floor, ce=Math.ceil;
@@ -237,9 +237,9 @@ function calc(){
   const rows=[
     ["CUT_WEIGHT","Hmotnosť prírezu",cwSrc,fmt(cw,3)+" kg"],
     ["N_LAYER","Kusov vo vrstve",`${g.x||0} × ${g.y||0}${rot?" (otočené o 90°)":""}`,fmt(nLayer)+" ks"],
-    ["N_LAYERS","Počet vrstiev",`⌊(${fmt(PH)} − 4) / (${fmt(T,1)} + 4)⌋`,fmt(nLayers)],
+    ["N_LAYERS","Počet vrstiev",`⌊(${fmt(PH)} − ${CB}) / (${fmt(T,1)} + ${CB})⌋`,fmt(nLayers)],
     ["N_CARDBOARDS","Počet lepeniek","N_LAYERS + 1",fmt(nCards)+" ks"],
-    ["","Výška stohu",`${fmt(nLayers)} × ${fmt(T,1)} + ${fmt(nCards)} × 4 ≤ ${fmt(PH)}`,fmt(stack,1)+" mm"],
+    ["","Výška stohu",`${fmt(nLayers)} × ${fmt(T,1)} + ${fmt(nCards)} × ${CB} ≤ ${fmt(PH)}`,fmt(stack,1)+" mm"],
     ["N_GEO","Limit podľa rozmerov","N_LAYER × N_LAYERS",fmt(nGeo)+" ks"],
     ["N_WEIGHT","Limit podľa hmotnosti",`⌊${fmt(v.NETTO_MAX)} / ${fmt(cw,3)}⌋`,Number.isFinite(nWt)?fmt(nWt)+" ks":"–"],
     ["MAX_CUTS_PER_PACK","Maximum na balenie","min(N_GEO ; N_WEIGHT)",fmt(N)+" ks",true],
